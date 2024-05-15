@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">myTest</string>
+    <string name="empty"></string>
+    <string name="tag">myTag</string>
+
+    <string name="home">home</string>
+    <string name="tests">tests</string>
+    <string name="enterTheLink">link: </string>
+    <string name="check">home</string>
+    <string name="createYourTest">Create your test</string>
+</resources>
