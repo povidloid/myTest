@@ -107,7 +107,6 @@ class MainActivity : ComponentActivity() {
         SavedTheme.theme = ThemeManager(this).isDarkTheme
         val savedHistory = HistoryManager(this).getHistory()?.split(", ")
         savedHistory?.let { searchHistory.queue.addAll(it) }
-        Log.d("myTag", savedHistory.toString())
 
         setContent {
             BottomNavigationBar()
@@ -117,7 +116,6 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         val savedHistory = searchHistory.queue.toString().replace("[", "").replace("]", "")
-        Log.d("myTag", savedHistory)
         HistoryManager(this).setHistory(savedHistory)
     }
 }
@@ -281,10 +279,5 @@ fun HomeScreen(navHostController: NavHostController) {
                     .padding(2.dp)
             )
         }
-
-//            Switch(checked = SavedTheme.theme, onCheckedChange = {
-//                SavedTheme.theme = !SavedTheme.theme
-//                themeManager.setDarkTheme(SavedTheme.theme)
-//            })
     }
 }
