@@ -48,6 +48,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
+import com.example.mytest.room.MainDB
 import com.example.mytest.room.MainViewModel
 import com.example.mytest.screens.searchHistory
 import com.example.mytest.ui.theme.MyTestTheme
@@ -101,8 +103,7 @@ object SavedTheme {
     mutableStateOf(false)
 }
 
-
-class MainActivity : ComponentActivity() {
+class MainActivity() : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -123,7 +124,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(
+    mainViewModel: MainViewModel = viewModel()
+) {
+    mainViewModel.loadTests()
+
     val navController = rememberNavController()
     var showBottomBar by rememberSaveable {
         mutableStateOf(true)

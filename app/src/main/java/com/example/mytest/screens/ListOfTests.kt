@@ -1,5 +1,7 @@
 package com.example.mytest.screens
 
+import android.app.Application
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,14 +28,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mytest.room.Dao
 import com.example.mytest.room.MainViewModel
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.toList
 
 data class TestInfo(
     val title: String,
@@ -49,11 +57,19 @@ object Utils {
     }
 }
 
+object SelectedTest{
+    lateinit var testBody: String
+}
+
 @Composable
-fun ListOfTests(navHostController: NavHostController,
-                mainViewModel: MainViewModel = viewModel()) {
-    val tests by mainViewModel.tests.collectAsState(initial = emptyList())
-    if (SavedTests.savedTestsList.isEmpty()) {
+fun ListOfTests(
+    navHostController: NavHostController,
+    mainViewModel: MainViewModel = viewModel()
+) {
+    mainViewModel.loadTests()
+    val tests = mainViewModel.tests.collectAsState(initial = emptyList())
+
+    if (tests.value.isEmpty()) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -62,40 +78,46 @@ fun ListOfTests(navHostController: NavHostController,
             Text(text = "Create your own test in 'home' screen! :)")
         }
     } else {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            LazyColumn {
-                itemsIndexed(tests) { index, test ->
-                    Card(
+        LazyColumn {
+            items(tests.value) { test ->
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable {
+                            SelectedTest.testBody = test.testBody
+                            navHostController.navigate("completeTest")
+                        }
+                ) {
+                    Text(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable {
-                                navHostController.navigate("completeTest")
-                            }
+                            .padding(8.dp),
+                        text = test.tittle,
+                        fontSize = 20.sp
+                    )
+                    Row(
+                        modifier = Modifier.padding(8.dp)
                     ) {
                         Text(
-                            modifier = Modifier
-                                .padding(8.dp),
-                            text = index.toString(),
-                            fontSize = 20.sp
+                            text = "Date of creation: ${test.creationDate}",
+                            fontSize = 16.sp
                         )
-                        Row(
-                            modifier = Modifier.padding(8.dp)
-                        ) {
-                            Text(
-                                text = "Date of creation: ",
-                                fontSize = 16.sp
-                            )
-                            Text(
-                                text = "placeholder",
-                                fontSize = 16.sp
-                            )
-                        }
                     }
                 }
             }
+        }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ){
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "delete",
+                modifier = Modifier.clickable {
+                    mainViewModel.clearDatabase()
+                }
+            )
         }
 
     }

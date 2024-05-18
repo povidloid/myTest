@@ -13,7 +13,7 @@ class App: Application() {
         database = Room.databaseBuilder(
             this,
             MainDB::class.java,
-            "database-for-saved-tests"
+            "Final database for tests"
         ).build()
     }
 }

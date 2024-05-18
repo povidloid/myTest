@@ -1,5 +1,6 @@
 package com.example.mytest.room
 
+import androidx.compose.runtime.MutableState
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -12,5 +13,7 @@ interface Dao {
     suspend fun insertTest(testEntity: TestEntity)
     @Query ("SELECT * FROM savedTests")
     fun getAllTests(): Flow<List<TestEntity>>
+    @Query ("DELETE FROM savedTests")
+    suspend fun clearDataBase()
 
 }

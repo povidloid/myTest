@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.devtools.ksp") version "1.9.0-1.0.12"
 }
 
 android {
@@ -53,6 +54,9 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.androidx.room.ktx)
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    implementation("com.google.code.gson:gson:2.8.9")
 
     implementation(libs.retrofit2.retrofit)
     implementation(libs.converter.gson)
