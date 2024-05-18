@@ -1,5 +1,5 @@
 [versions]
-agp = "8.3.1"
+agp = "8.4.0"
 converterGson = "2.3.0"
 kotlin = "1.9.0"
 coreKtx = "1.12.0"
@@ -13,9 +13,12 @@ navigationCompose = "2.7.7"
 material3Android = "1.2.1"
 appcompat = "1.6.1"
 retrofitVersion = "2.9.0"
+roomKtx = "2.6.1"
+roomRuntimeVersion = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -34,6 +37,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 retrofit2-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofitVersion" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

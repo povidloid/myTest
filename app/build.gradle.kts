@@ -51,6 +51,9 @@ android {
 
 dependencies {
 
+    implementation(libs.room.runtime)
+    implementation(libs.androidx.room.ktx)
+
     implementation(libs.retrofit2.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.androidx.core.ktx)

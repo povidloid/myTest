@@ -21,6 +21,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mytest.room.MainViewModel
 
 data class TestInfo(
     val title: String,
@@ -47,7 +50,9 @@ object Utils {
 }
 
 @Composable
-fun ListOfTests(navHostController: NavHostController) {
+fun ListOfTests(navHostController: NavHostController,
+                mainViewModel: MainViewModel = viewModel()) {
+    val tests by mainViewModel.tests.collectAsState(initial = emptyList())
     if (SavedTests.savedTestsList.isEmpty()) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -61,7 +66,7 @@ fun ListOfTests(navHostController: NavHostController) {
             modifier = Modifier.fillMaxSize()
         ) {
             LazyColumn {
-                itemsIndexed(SavedTests.savedTestsList) { index, test ->
+                itemsIndexed(tests) { index, test ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
