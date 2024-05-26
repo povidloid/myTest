@@ -3,7 +3,6 @@ package com.example.mytest.room
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.mytest.screens.QuestionAndAnswers
 
 @Entity(tableName = "SavedTests")
 data class TestEntity(

@@ -1,7 +1,6 @@
-package com.example.mytest.screens
+package com.example.mytest.testScreens
 
 import android.util.Log
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,15 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -32,15 +28,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mytest.mainScreens.Test
+import com.example.mytest.retrofit.RetrofitObject
 
 import com.example.mytest.room.MainViewModel
 import com.example.mytest.room.TestEntity
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -170,14 +171,37 @@ fun Questions(
             modifier = Modifier
                 .clickable {
                     SavedTest.questionsAndAnswersList += questionList
-                    Log.d("myTag", LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+                    Log.d(
+                        "myTag",
+                        LocalDate
+                            .now()
+                            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    )
 
 
-                    mainViewModel.insertTest(TestEntity(
-                        tittle = SavedTest.testTittle,
-                        creationDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                        testBody = Gson().toJson(SavedTest.questionsAndAnswersList)
-                    ))
+                    mainViewModel.insertTest(
+                        TestEntity(
+                            tittle = SavedTest.testTittle,
+                            creationDate = LocalDate
+                                .now()
+                                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                            testBody = Gson().toJson(SavedTest.questionsAndAnswersList)
+                        )
+                    )
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val receivedId = RetrofitObject.userApi.saveTest(
+                                Test(
+                                    0,
+                                    Gson().toJson(SavedTest.questionsAndAnswersList)
+                                )
+                            )
+                            Log.d("myTag", receivedId.toString())
+                        } catch (e: Exception) {
+                            Log.d("myTag", e.toString())
+                        }
+                    }
 
                     navController.navigate("home") {
                         popUpTo("createTest") {
