@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SearchBar
@@ -73,6 +75,8 @@ fun HomeScreen(navHostController: NavHostController) {
     val vModel: ViewModelSearchText = viewModel()
     var isActive by remember { mutableStateOf(false) }
 
+    var isTestSearching by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -105,6 +109,8 @@ fun HomeScreen(navHostController: NavHostController) {
                                 if (vModel.searchText.value != "") {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         isActive = false
+                                        isTestSearching = true
+
                                         var testBod = ""
 
                                         SearchHistory.addToQueue(vModel.searchText.value)
@@ -118,6 +124,7 @@ fun HomeScreen(navHostController: NavHostController) {
 
 
                                         withContext(Dispatchers.Main) {
+                                            isTestSearching = false
                                             if (testBod != "") {
                                                 SelectedTest.testBody = testBod
                                                 navHostController.navigate("completeTest")
@@ -141,71 +148,32 @@ fun HomeScreen(navHostController: NavHostController) {
             ) {
                 Column {
                     SearchHistory.queue.reversed().forEach { text ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(2.dp)
-                        ) {
-                            Text(text = text, modifier = Modifier
-                                .clickable {
-                                    vModel.searchText.value = text
-                                }
-                                .weight(1f))
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "clear",
-                                modifier = Modifier.clickable {
-                                    isActive = false
-                                    SearchHistory.queue.remove(text)
-                                }
-                            )
+                        if(text != "") {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(2.dp)
+                            ) {
+                                Text(text = text, modifier = Modifier
+                                    .clickable {
+                                        vModel.searchText.value = text
+                                    }
+                                    .weight(1f))
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "clear",
+                                    modifier = Modifier.clickable {
+                                        isActive = false
+                                        SearchHistory.queue.remove(text)
+                                    }
+                                )
+                            }
                         }
 
                     }
                 }
             }
-
-//            OutlinedTextField(
-//                value = eLink,
-//                onValueChange = { eLink = it },
-//                placeholder = {
-//                    Text(text = "link: ", fontSize = 20.sp)
-//                },
-//                modifier = Modifier.fillMaxWidth(),
-//                shape = RoundedCornerShape(8.dp),
-//                trailingIcon = {
-//                    if (eLink != "") {
-//                        Icon(
-//                            imageVector = Icons.Default.Check,
-//                            contentDescription = "check",
-//                            modifier = Modifier.clickable {
-//                                CoroutineScope(Dispatchers.IO).launch {
-//                                    try {
-//                                        testBod = RetrofitObject.userApi.getTest(eLink.toInt()).testBody
-//                                    } catch (e: Exception) {
-//                                        Log.d("myTag", e.toString())
-//                                    }
-//
-//                                    if (testBod != "") {
-//                                        SelectedTest.testBody = testBod
-//                                    }
-//                                    withContext(Dispatchers.Main) {
-//                                        Log.d("myTest", testBod)
-//
-//                                        if (testBod != "" ) {
-//                                            SelectedTest.testBody = testBod
-//                                            navHostController.navigate("completeTest")
-//                                        } else if (testBod == "") {
-//                                            Toast.makeText(hmContext, "Test not found", Toast.LENGTH_SHORT).show()
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        )
-//                    }
-//                }
-//            )
 
             Text(
                 text = "Create your test",
@@ -215,6 +183,17 @@ fun HomeScreen(navHostController: NavHostController) {
                     navHostController.navigate("createTest")
                 }
             )
+
+            if(isTestSearching){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator()
+
+                    Text(modifier = Modifier.padding(4.dp), text = "searching test...")
+                }
+
+            }
         }
     }
 

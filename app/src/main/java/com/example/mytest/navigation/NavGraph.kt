@@ -24,9 +24,6 @@ fun NavGraph(
         composable("createTest"){
             CreateTest(navHostController)
         }
-//        composable("api"){
-//            ThirdScreen()
-//        }
         composable("completeTest"){
             CompleteTest(navHostController)
         }

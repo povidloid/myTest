@@ -1,6 +1,7 @@
 package com.example.mytest.testScreens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -40,8 +43,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -58,7 +60,7 @@ fun CreateTest(navController: NavHostController) {
         modifier = Modifier.fillMaxSize()
     ) {
         item {
-            Questions(navController)
+            TestConstructor(navController)
         }
     }
 }
@@ -69,14 +71,18 @@ object SavedTest {
 }
 
 @Composable
-fun Questions(
+fun TestConstructor(
     navController: NavHostController,
     mainViewModel: MainViewModel = viewModel()
 ) {
+    val qContext = LocalContext.current
     var enteredTestTittle by remember {
         mutableStateOf("")
     }
     var isTestTittleEditing by remember {
+        mutableStateOf(false)
+    }
+    var iconIsSelected by remember {
         mutableStateOf(false)
     }
 
@@ -96,7 +102,7 @@ fun Questions(
         )
     }
     if (!isTestTittleEditing) {
-        if(enteredTestTittle == "") {
+        if (enteredTestTittle == "") {
             Text(
                 text = "Click on me to rename your test",
                 style = MaterialTheme.typography.titleLarge,
@@ -105,7 +111,7 @@ fun Questions(
                         isTestTittleEditing = true
                     }
             )
-        } else{
+        } else {
             Text(
                 text = enteredTestTittle,
                 style = MaterialTheme.typography.titleLarge,
@@ -158,59 +164,101 @@ fun Questions(
 
 
     Box(
-        Modifier.fillMaxSize()
+        Modifier.fillMaxSize(),
 //            .clip(CircleShape)
 //            .border(2.dp, colorScheme.primary, CircleShape),
-                ,
         contentAlignment = Alignment.BottomEnd,
 
-    ) {
-        Icon(
-            imageVector = Icons.Default.Check,
-            contentDescription = "check",
-            modifier = Modifier
-                .clickable {
-                    SavedTest.questionsAndAnswersList += questionList
-                    Log.d(
-                        "myTag",
-                        LocalDate
-                            .now()
-                            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                    )
+        ) {
+        if (!iconIsSelected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "check",
+                modifier = Modifier
+                    .clickable {
+                        iconIsSelected = true
+                        var isScoresNotNull = true
 
+                        questionList.forEach { questionAndAnswers ->
+                            if (questionAndAnswers.scores.sum() == 0)
+                                isScoresNotNull = false
+                        }
 
-                    mainViewModel.insertTest(
-                        TestEntity(
-                            tittle = SavedTest.testTittle,
-                            creationDate = LocalDate
-                                .now()
-                                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                            testBody = Gson().toJson(SavedTest.questionsAndAnswersList)
-                        )
-                    )
+                        if (isScoresNotNull) {
+                            SavedTest.questionsAndAnswersList += questionList
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val receivedId = RetrofitObject.userApi.saveTest(
-                                Test(
-                                    0,
-                                    Gson().toJson(SavedTest.questionsAndAnswersList)
+                            mainViewModel.insertTest(
+                                TestEntity(
+                                    tittle = SavedTest.testTittle,
+                                    creationDate = LocalDate
+                                        .now()
+                                        .format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                                    testBody = Gson().toJson(SavedTest.questionsAndAnswersList)
                                 )
                             )
-                            Log.d("myTag", receivedId.toString())
-                        } catch (e: Exception) {
-                            Log.d("myTag", e.toString())
-                        }
-                    }
 
-                    navController.navigate("home") {
-                        popUpTo("createTest") {
-                            inclusive = true
+                            Log.d("myTag", Gson().toJson(SavedTest.questionsAndAnswersList))
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                var receivedId = 0
+
+                                try {
+                                    receivedId = RetrofitObject.userApi.saveTest(
+                                        Test(
+                                            0,
+                                            Gson().toJson(SavedTest.questionsAndAnswersList)
+                                        )
+                                    )
+                                    Log.d("myTag", receivedId.toString())
+
+                                } catch (e: Exception) {
+                                    Log.d("myTag", e.toString())
+                                }
+
+                                withContext(Dispatchers.Main) {
+                                    SavedTest.testTittle = ""
+                                    SavedTest.questionsAndAnswersList = listOf()
+
+                                    if (receivedId != 0)
+                                        Toast
+                                            .makeText(
+                                                qContext,
+                                                "Your test's id: $receivedId",
+                                                Toast.LENGTH_LONG
+                                            )
+                                            .show()
+                                    else
+                                        Toast
+                                            .makeText(
+                                                qContext,
+                                                "Your test was successfully created",
+                                                Toast.LENGTH_LONG
+                                            )
+                                            .show()
+
+                                    navController.navigate("home") {
+                                        popUpTo("createTest") {
+                                            inclusive = true
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            iconIsSelected = false
+                            Toast
+                                .makeText(
+                                    qContext,
+                                    "Your test has question without correct answer. Enter the correct answer and try again",
+                                    Toast.LENGTH_LONG
+                                )
+                                .show()
                         }
                     }
-                }
-                .size(32.dp)
-        )
+                    .size(32.dp)
+            )
+        } else{
+            CircularProgressIndicator()
+        }
     }
 
 }
@@ -306,7 +354,7 @@ fun Question(q: QuestionAndAnswers) {
                 Text(text = key)
             } else {
                 var enteredAnswer by remember {
-                    mutableStateOf(key)
+                    mutableStateOf("")
                 }
 
                 OutlinedTextField(

@@ -16,10 +16,10 @@ interface TestAPI{
 }
 
 object RetrofitObject{
-    val retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.164.124:8080")  // для физического устройства
-//        .baseURL("http://10.0.2.2:8080")  // для эмулятора
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl("http://192.168.241.199:8080")  // для физического устройства
+//        .baseUrl("http://10.0.2.2:8080")  // для эмулятора
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-    val userApi = retrofit.create(TestAPI::class.java)
+    val userApi: TestAPI = retrofit.create(TestAPI::class.java)
 }
